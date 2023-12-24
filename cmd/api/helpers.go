@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -21,4 +22,23 @@ func (app *application) readParamAsInt(s *string, r *http.Request) (int64, error
 	}
 
 	return param_int, nil
+}
+
+func (app *application) convertDataToJson(w http.ResponseWriter, status int, data any, headers http.Header) error {
+	data_json, err := json.Marshal(data)
+
+	if err != nil {
+		return err
+	}
+
+	data_json = append(data_json, '\n')
+
+	for k, v := range headers {
+		w.Header()[k] = v
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(data_json)
+
+	return nil
 }
