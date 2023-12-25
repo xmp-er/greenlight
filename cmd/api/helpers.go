@@ -24,8 +24,10 @@ func (app *application) readParamAsInt(s *string, r *http.Request) (int64, error
 	return param_int, nil
 }
 
-func (app *application) convertDataToJson(w http.ResponseWriter, status int, data any, headers http.Header) error {
-	data_json, err := json.Marshal(data)
+type envelope map[string]any
+
+func (app *application) convertDataToJson(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
+	data_json, err := json.MarshalIndent(data, "", "\t")
 
 	if err != nil {
 		return err
