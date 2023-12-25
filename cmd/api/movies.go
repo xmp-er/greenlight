@@ -16,7 +16,8 @@ func (app *application) ShowMovieHandler(w http.ResponseWriter, r *http.Request)
 	id := "id"
 	id_main, err := app.readParamAsInt(&id, r)
 	if err != nil || id_main < 1 {
-		http.NotFound(w, r)
+		app.logError(r, err)
+		app.notFoundResponse(w, r)
 		return
 	}
 
@@ -32,8 +33,10 @@ func (app *application) ShowMovieHandler(w http.ResponseWriter, r *http.Request)
 	err = app.convertDataToJson(w, http.StatusOK, envelope{"movie": movie}, nil)
 
 	if err != nil {
-		app.logger.Print(err)
-		http.Error(w, "Error converting the id to json, please recheck json data", http.StatusInternalServerError)
+		app.logError(r, err)
+		app.logger.Println("Error converting the id to json, please recheck json data" + err.Error())
+		app.serverErrorResponse(w, r)
+		return
 	}
 
 }

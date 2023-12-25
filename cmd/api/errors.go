@@ -1,0 +1,37 @@
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func (app *application) logError(r *http.Request, err any) {
+	app.logger.Println(err)
+}
+
+func (app *application) errorResponse(err any, status int, w http.ResponseWriter, r *http.Request) {
+	env := envelope{
+		"error": err,
+	}
+
+	error := app.convertDataToJson(w, status, env, nil)
+
+	if error != nil {
+		app.logError(r, "Could not convert error data to Json because"+error.Error())
+		w.WriteHeader(500)
+	}
+}
+
+func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request) {
+
+	app.errorResponse("the server encountered a problem and could not process your request", http.StatusInternalServerError, w, r)
+}
+
+func (app *application) notFoundResponse(w http.ResponseWriter, r *http.Request) {
+
+	app.errorResponse("the requested resource could not be found", http.StatusNotFound, w, r)
+}
+
+func (app *application) methodNotAllowedResponse(w http.ResponseWriter, r *http.Request) {
+	app.errorResponse(fmt.Sprintf("the %s method is not supported for this resource", r.Method), http.StatusMethodNotAllowed, w, r)
+}
