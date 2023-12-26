@@ -9,6 +9,10 @@ func (app *application) logError(r *http.Request, err any) {
 	app.logger.Println(err)
 }
 
+func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	app.errorResponse(err.Error(), http.StatusBadRequest, w, r)
+}
+
 func (app *application) errorResponse(err any, status int, w http.ResponseWriter, r *http.Request) {
 	env := envelope{
 		"error": err,
