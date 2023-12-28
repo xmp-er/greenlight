@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"greenlight.architsproject/internal/data"
+	"greenlight.architsproject/internal/validator"
 )
 
 func (app *application) CreateMovieHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +21,20 @@ func (app *application) CreateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+
+	movie := data.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+
+	if data.ValidateMovie(v, &movie); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
