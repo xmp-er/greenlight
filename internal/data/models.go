@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrRecordNotFound = errors.New("record not found") //for when using get method there is no entry
+	ErrEditConflict   = errors.New("edit conflict")    //to prevent race condition, if same version but two different goroutines then after first goroutine, this will be implemented
 )
 
 type Models struct {
