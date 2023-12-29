@@ -154,7 +154,13 @@ func (app *application) UpdateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	if err != nil {
 		app.logger.Println("Failed to update the movie")
-		app.errorResponse(err, http.StatusInternalServerError, w, r)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.errorResponse(err, http.StatusInternalServerError, w, r)
+		}
+		return
 	}
 
 	err = app.convertDataToJson(w, http.StatusOK, envelope{"movie": updated_movie}, nil)
