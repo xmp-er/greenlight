@@ -19,7 +19,7 @@ func (v *Validator) Valid() bool { //if error map is empty then it is valid
 	return len(v.Errors) == 0
 }
 
-func (v *Validator) addError(key, message string) {
+func (v *Validator) AddError(key, message string) {
 	if _, isKeyExists := v.Errors[key]; isKeyExists == false {
 		v.Errors[key] = message
 	}
@@ -27,7 +27,7 @@ func (v *Validator) addError(key, message string) {
 
 func (v *Validator) Check(ok bool, key, message string) { //if ok flag is false the this will be added to error
 	if ok == false {
-		v.addError(key, message)
+		v.AddError(key, message)
 	}
 }
 
