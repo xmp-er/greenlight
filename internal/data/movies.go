@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/lib/pq"
@@ -135,15 +136,16 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 }
 
 func (m MovieModel) GetAll(title string, genres []string, filter Filters) ([]*Movie, error) {
-	query := `SELECT id, created_at, title, year, runtime, genres, version FROM movies ORDER BY id`
+	query := `SELECT id, created_at, title, year, runtime, genres, version FROM movies WHERE (LOWER(title) = LOWER($1) OR $1='') AND (genres @> $2 OR $2='{}') ORDER BY id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, title, pq.Array(genres))
 
 	defer cancel()
 
 	if err != nil {
+		log.Println("Error fetching the data from the datbase :", err)
 		return nil, err
 	}
 
@@ -161,6 +163,7 @@ func (m MovieModel) GetAll(title string, genres []string, filter Filters) ([]*Mo
 			&movie.Version,
 		)
 		if err != nil {
+			log.Println("Erorr scanning the data from the extracted data from database into response")
 			return nil, err
 		}
 
@@ -168,6 +171,7 @@ func (m MovieModel) GetAll(title string, genres []string, filter Filters) ([]*Mo
 	}
 
 	if err = rows.Err(); err != nil {
+		log.Println("Error during iterating the data fetched from the database as ", err)
 		return nil, err
 	}
 
