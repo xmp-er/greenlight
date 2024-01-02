@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -63,9 +64,10 @@ func main() {
 
 	logger.PrintInfo("Database connection established", nil)
 
-	srv := &http.Server{ //creating custom http server
-		Addr:         ":" + strconv.Itoa(app.config.port),
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.port),
 		Handler:      app.routes(),
+		ErrorLog:     log.New(logger, "", 0),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
