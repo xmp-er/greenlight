@@ -5,8 +5,11 @@ import (
 	"net/http"
 )
 
-func (app *application) logError(r *http.Request, err any) {
-	app.logger.Println(err)
+func (app *application) logError(r *http.Request, err error) {
+	app.logger.PrintError(err, map[string]string{
+		"request_method": r.Method,
+		"request_url":    r.URL.String(),
+	})
 }
 
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
@@ -21,7 +24,7 @@ func (app *application) errorResponse(err any, status int, w http.ResponseWriter
 	error := app.convertDataToJson(w, status, env, nil)
 
 	if error != nil {
-		app.logError(r, "Could not convert error data to Json because"+error.Error())
+		app.logError(r, error)
 		w.WriteHeader(500)
 	}
 }

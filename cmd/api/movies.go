@@ -83,7 +83,7 @@ func (app *application) ShowMovieHandler(w http.ResponseWriter, r *http.Request)
 
 	if err != nil {
 		app.logError(r, err)
-		app.logger.Println("Error converting the id to json, please recheck json data" + err.Error())
+		app.logger.PrintError(err, map[string]string{})
 		app.serverErrorResponse(w, r)
 		return
 	}
@@ -95,7 +95,7 @@ func (app *application) UpdateMovieHandler(w http.ResponseWriter, r *http.Reques
 	id_main, err := app.readParamAsInt(&id, r)
 
 	if err != nil {
-		app.logger.Println("Error parsing id from parameter as :" + err.Error())
+		app.logger.PrintError(err, map[string]string{})
 		app.serverErrorResponse(w, r)
 		return
 	}
@@ -105,7 +105,7 @@ func (app *application) UpdateMovieHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
-			app.logger.Println("The data for given id does not exist in the database," + err.Error())
+			app.logger.PrintError(err, map[string]string{})
 			app.notFoundResponse(w, r)
 		default:
 			app.serverErrorResponse(w, r)
@@ -153,7 +153,7 @@ func (app *application) UpdateMovieHandler(w http.ResponseWriter, r *http.Reques
 	err = app.models.Movies.Update(updated_movie)
 
 	if err != nil {
-		app.logger.Println("Failed to update the movie")
+		app.logger.PrintError(err, map[string]string{})
 		switch {
 		case errors.Is(err, data.ErrEditConflict):
 			app.editConflictResponse(w, r)
@@ -165,7 +165,7 @@ func (app *application) UpdateMovieHandler(w http.ResponseWriter, r *http.Reques
 
 	err = app.convertDataToJson(w, http.StatusOK, envelope{"movie": updated_movie}, nil)
 	if err != nil {
-		app.logger.Println(err)
+		app.logger.PrintError(err, map[string]string{})
 		app.serverErrorResponse(w, r)
 	}
 
@@ -176,7 +176,7 @@ func (app *application) DeleteMovieHandler(w http.ResponseWriter, r *http.Reques
 	id_main, err := app.readParamAsInt(&id, r)
 
 	if err != nil {
-		app.logger.Println("Unable to parse id from request")
+		app.logger.PrintError(err, map[string]string{})
 		app.serverErrorResponse(w, r)
 		return
 	}

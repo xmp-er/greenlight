@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"greenlight.architsproject/internal/data"
+	"greenlight.architsproject/internal/jsonlog"
 )
 
 const version = "1.0.0"
@@ -30,7 +30,7 @@ type config struct {
 
 type application struct {
 	config config
-	logger *log.Logger
+	logger *jsonlog.Logger
 	models data.Models
 }
 
@@ -45,12 +45,12 @@ func main() {
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
 
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 
 	defer db.Close()
@@ -61,7 +61,7 @@ func main() {
 		models: data.NewModels(db),
 	}
 
-	logger.Printf("Database connection established")
+	logger.PrintInfo("Database connection established", nil)
 
 	srv := &http.Server{ //creating custom http server
 		Addr:         ":" + strconv.Itoa(app.config.port),
@@ -71,11 +71,14 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Println("The server on env:", app.config.env, " has been started on the port", srv.Addr)
+	logger.PrintInfo("starting server", map[string]string{
+		"addr": srv.Addr,
+		"env":  cfg.env,
+	})
 	err = srv.ListenAndServe()
 
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 
 }
